@@ -1,0 +1,65 @@
+name: macOS Build and Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Report toolchain
+        run: |
+          xcode-select -p
+          xcodebuild -version
+          swift --version
+
+      - name: Discover project
+        id: project
+        shell: bash
+        run: |
+          if find . -maxdepth 3 -name '*.xcworkspace' -print -quit | grep -q .; then
+            WORKSPACE="$(find . -maxdepth 3 -name '*.xcworkspace' -print -quit)"
+            echo "kind=workspace" >> "$GITHUB_OUTPUT"
+            echo "path=$WORKSPACE" >> "$GITHUB_OUTPUT"
+          elif find . -maxdepth 3 -name '*.xcodeproj' -print -quit | grep -q .; then
+            PROJECT="$(find . -maxdepth 3 -name '*.xcodeproj' -print -quit)"
+            echo "kind=project" >> "$GITHUB_OUTPUT"
+            echo "path=$PROJECT" >> "$GITHUB_OUTPUT"
+          elif [ -f Package.swift ]; then
+            echo "kind=package" >> "$GITHUB_OUTPUT"
+            echo "path=Package.swift" >> "$GITHUB_OUTPUT"
+          else
+            echo "No Xcode project/workspace or Package.swift found. The native app project must be created as part of V1." >&2
+            exit 1
+          fi
+
+      - name: Build and test Swift package
+        if: steps.project.outputs.kind == 'package'
+        run: swift test
+
+      - name: Build and test Xcode project
+        if: steps.project.outputs.kind == 'project'
+        run: |
+          xcodebuild -list -project "${{ steps.project.outputs.path }}"
+          xcodebuild test -project "${{ steps.project.outputs.path }}" -scheme "$(xcodebuild -list -project "${{ steps.project.outputs.path }}" 2>/dev/null | awk '/Schemes:/{flag=1;next} flag && NF {gsub(/^[[:space:]]+/, ""); print; exit}')" -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
+
+      - name: Build and test Xcode workspace
+        if: steps.project.outputs.kind == 'workspace'
+        run: |
+          xcodebuild -list -workspace "${{ steps.project.outputs.path }}"
+          xcodebuild test -workspace "${{ steps.project.outputs.path }}" -scheme "$(xcodebuild -list -workspace "${{ steps.project.outputs.path }}" 2>/dev/null | awk '/Schemes:/{flag=1;next} flag && NF {gsub(/^[[:space:]]+/, ""); print; exit}')" -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
