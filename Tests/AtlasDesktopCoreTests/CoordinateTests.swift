@@ -19,4 +19,19 @@ struct CoordinateTests {
             try Coordinate(latitude: 0, longitude: 181)
         }
     }
+
+    /// NaN reaching the geometry would produce vertices that silently
+    /// corrupt a whole country's outline, so it is rejected at the door.
+    @Test func rejectsNonFiniteValues() {
+        #expect(throws: (any Error).self) { try Coordinate(latitude: .nan, longitude: 0) }
+        #expect(throws: (any Error).self) { try Coordinate(latitude: 0, longitude: .infinity) }
+    }
+
+    @Test func normalizesLongitudeIntoCanonicalRange() {
+        #expect(Coordinate.normalizedLongitude(190) == -170)
+        #expect(Coordinate.normalizedLongitude(-190) == 170)
+        #expect(Coordinate.normalizedLongitude(540) == 180 - 360)
+        #expect(Coordinate.normalizedLongitude(0) == 0)
+        #expect(Coordinate.normalizedLongitude(-180) == -180)
+    }
 }
