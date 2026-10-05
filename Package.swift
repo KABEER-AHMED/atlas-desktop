@@ -12,13 +12,24 @@ let package = Package(
     ],
     targets: [
         .target(name: "AtlasDesktopCore"),
+        // Milestone 1 renderer-decision spike only. Not a final
+        // GlobeRendering module — see docs/adr/0002-renderer-choice.md.
+        // Deleted/replaced once the renderer decision ships for real.
+        .target(
+            name: "GlobeRenderingSpike",
+            dependencies: ["AtlasDesktopCore"]
+        ),
         .executableTarget(
             name: "AtlasDesktopApp",
-            dependencies: ["AtlasDesktopCore"]
+            dependencies: ["AtlasDesktopCore", "GlobeRenderingSpike"]
         ),
         .testTarget(
             name: "AtlasDesktopCoreTests",
             dependencies: ["AtlasDesktopCore"]
+        ),
+        .testTarget(
+            name: "GlobeRenderingSpikeTests",
+            dependencies: ["GlobeRenderingSpike", "AtlasDesktopCore"]
         )
     ]
 )
