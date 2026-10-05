@@ -1,1 +1,4 @@
 .build/
+# Generated app bundle, icon set and render-check images.
+build/
+.DS_Store

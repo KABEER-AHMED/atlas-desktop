@@ -50,14 +50,32 @@ renderer for just the globe draw call, keeping SwiftUI/AppKit for
 everything else.
 
 ## Verification status
-**Partially unverified.** This decision and the spike code were
-authored with no Swift/macOS toolchain available — see
-docs/adr/0001-bootstrap-structure.md for why. Confirm before treating
-this ADR as settled:
-1. The spike actually compiles and runs on a real Mac (`swift run
-   AtlasDesktopApp` should show a dark sphere with two yellow outline
-   shapes, draggable with the mouse).
-2. The two outlines are **not** real country borders — see the
-   warning in `PlaceholderOutlines.swift`. They exist only to give the
-   pipeline a non-trivial shape to push through; do not judge
-   geographic accuracy from this spike.
+
+**Verified.** The decision was originally recorded from an unbuilt spike;
+it has since been carried through to the shipped renderer and checked:
+
+1. `swift build` and `swift test` pass on macOS 26 with Swift 6.4.
+2. The app runs and draws the real dataset — 177 countries, ~10 400
+   vertices of border geometry in a single draw call — over NASA Blue
+   Marble imagery, with labels, selection highlighting, a day/night
+   terminator and an atmospheric rim.
+3. `SCNGeometry` with custom vertex and index buffers carried the real
+   border data without trouble, as this ADR predicted.
+4. `SCNRenderer` renders the same scene offscreen with no window, which
+   is what `AtlasRenderCheck` is built on — an unplanned benefit of the
+   scene-graph API that raw Metal would not have given for free.
+
+Two things this ADR expected to use turned out not to be needed:
+
+- **`SCNView.hitTest` is not used.** Selection runs the renderer's own
+  inverse projection and an analytic ray/sphere intersection instead,
+  then exact point-in-polygon arithmetic. SceneKit's hit test would
+  answer against the *tessellated sphere*, not the geographic surface,
+  and its accuracy would depend on `segmentCount`. The current path is
+  independent of tessellation and shares its transforms with the geometry.
+- **No shader modifiers were needed.** Day/night is a directional light
+  pointed at the real subsolar position, which is simpler than a custom
+  shader and needs no per-frame uniform updates.
+
+Still unmeasured: frame rate and frame pacing with the full dataset — see
+docs/TESTING.md. The trigger to revisit this decision is unchanged.

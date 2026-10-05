@@ -2,6 +2,27 @@
 
 The agent must execute this sequence through release verification. Planning and renderer spikes are not deliverables by themselves.
 
+## Status
+
+All ten milestones are implemented. What remains open is verification
+that needs a person at a real Mac — hand-driven input, presentation mode
+across Stage Manager and multiple displays, sleep/wake, VoiceOver, and
+frame-rate profiling — all listed explicitly in
+[TESTING.md](TESTING.md#still-to-do-on-a-real-mac).
+
+| Milestone | State |
+|---|---|
+| 0 — Inspect and establish the build | Done. Five targets plus two development tools; macOS 14 deployment target; CI builds and tests. |
+| 1 — Renderer decision | Done. SceneKit, carried from spike to shipped renderer; spike code removed. [ADR 0002](adr/0002-renderer-choice.md). |
+| 2 — Data and geography domain | Done. Natural Earth v5.1.2 pinned by checksum, reproducible conversion, 34 data tests covering holes, multipolygons, the antimeridian, the pole and malformed input. |
+| 3 — Interactive globe | Done. Drag, bounded zoom, reset; camera state survives resize and relaunch. |
+| 4 — Selection and labels | Done. Exact point-in-polygon hit-testing, three selection cues, deterministic label layout with level of detail, learning mode. |
+| 5 — Motion, day/night, lifecycle | Done. Display-link pacing, Reduce Motion support, real subsolar lighting, rendering suspended when not visible. |
+| 6 — Native UX | Done. Window, panel, menu bar, status-bar item, settings, keyboard access, accessibility labels, generated app icon, actionable error states. |
+| 7 — Desktop presentation | Done within what public APIs allow, and documented honestly. [ADR 0005](adr/0005-desktop-presentation.md). |
+| 8 — Hardening and performance | Partly done. 138 automated tests plus an offscreen render check; startup, memory and idle CPU measured; frame rate and input latency **not** measured. |
+| 9 — Release readiness | Done apart from the open manual checks above. |
+
 ## Milestone 0 — Inspect and establish the build
 - Inspect repository contents, branch state, project/package setup, deployment target, and current conventions.
 - Choose a supported minimum macOS version based on required APIs and CI.
