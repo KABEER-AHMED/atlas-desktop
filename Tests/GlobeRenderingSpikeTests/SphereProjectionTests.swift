@@ -1,34 +1,34 @@
-import XCTest
+import Testing
 @testable import GlobeRenderingSpike
 import AtlasDesktopCore
 
-final class SphereProjectionTests: XCTestCase {
-    func testNorthPoleProjectsToPositiveY() throws {
+struct SphereProjectionTests {
+    @Test func northPoleProjectsToPositiveY() throws {
         let coord = try Coordinate(latitude: 90.0, longitude: 0.0)
         let p = SphereProjection.point(for: coord)
-        XCTAssertEqual(p.y, 1.0, accuracy: 1e-9)
-        XCTAssertEqual(p.x, 0.0, accuracy: 1e-9)
-        XCTAssertEqual(p.z, 0.0, accuracy: 1e-9)
+        #expect(abs(p.y - 1.0) < 1e-9)
+        #expect(abs(p.x) < 1e-9)
+        #expect(abs(p.z) < 1e-9)
     }
 
-    func testPrimeMeridianEquatorProjectsToPositiveX() throws {
+    @Test func primeMeridianEquatorProjectsToPositiveX() throws {
         let coord = try Coordinate(latitude: 0.0, longitude: 0.0)
         let p = SphereProjection.point(for: coord)
-        XCTAssertEqual(p.x, 1.0, accuracy: 1e-9)
-        XCTAssertEqual(p.y, 0.0, accuracy: 1e-9)
-        XCTAssertEqual(p.z, 0.0, accuracy: 1e-9)
+        #expect(abs(p.x - 1.0) < 1e-9)
+        #expect(abs(p.y) < 1e-9)
+        #expect(abs(p.z) < 1e-9)
     }
 
-    func test90EastEquatorProjectsToPositiveZ() throws {
+    @Test func ninetyEastEquatorProjectsToPositiveZ() throws {
         let coord = try Coordinate(latitude: 0.0, longitude: 90.0)
         let p = SphereProjection.point(for: coord)
-        XCTAssertEqual(p.x, 0.0, accuracy: 1e-9)
-        XCTAssertEqual(p.z, 1.0, accuracy: 1e-9)
+        #expect(abs(p.x) < 1e-9)
+        #expect(abs(p.z - 1.0) < 1e-9)
     }
 
-    func testRadiusIsRespected() throws {
+    @Test func radiusIsRespected() throws {
         let coord = try Coordinate(latitude: 0.0, longitude: 0.0)
         let p = SphereProjection.point(for: coord, radius: 2.5)
-        XCTAssertEqual(p.x, 2.5, accuracy: 1e-9)
+        #expect(abs(p.x - 2.5) < 1e-9)
     }
 }
