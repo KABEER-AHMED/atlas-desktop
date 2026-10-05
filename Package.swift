@@ -1,4 +1,8 @@
 // swift-tools-version: 6.0
+// Requires Xcode 16+ (ships the Swift 6 toolchain). The test targets
+// use the new `Testing` framework (`import Testing`, `@Test`), which
+// needs tools-version 6.0 — don't downgrade this to "fix" an older
+// Xcode; update Xcode instead, or every test target fails to resolve.
 import PackageDescription
 
 let package = Package(
